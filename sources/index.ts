@@ -4,9 +4,9 @@ import { BaseCommand, WorkspaceRequiredError } from "@yarnpkg/cli"
 import {
   Cache,
   Configuration,
-  DescriptorHash,
+  Descriptor,
   InstallMode,
-  LocatorHash,
+  Locator,
   MessageName,
   Plugin,
   Project,
@@ -89,28 +89,25 @@ class NpmAuditFixCommand extends BaseCommand {
   ) {
     const { configuration, resolver, project } = state
 
-    const ident = structUtils.parseIdent(advisory.module_name)
+    const vulnerableIdent = structUtils.parseIdent(advisory.module_name)
 
-    const resolutionsToDelete = new Set<DescriptorHash>()
-    const locatorsToDelete = new Set<LocatorHash>()
-
-    for (const descriptor of project.storedDescriptors.values()) {
-      if (!structUtils.areIdentsEqual(descriptor, ident)) {
+    for (const foundDescriptor of project.storedDescriptors.values()) {
+      if (!structUtils.areIdentsEqual(foundDescriptor, vulnerableIdent)) {
         continue
       }
 
-      if (structUtils.isVirtualDescriptor(descriptor)) {
+      if (structUtils.isVirtualDescriptor(foundDescriptor)) {
         continue
       }
 
-      const locator = project.storedPackages.get(
-        project.storedResolutions.get(descriptor.descriptorHash),
+      const foundLocator = project.storedPackages.get(
+        project.storedResolutions.get(foundDescriptor.descriptorHash),
       )
 
       if (
-        !locator ||
+        !foundLocator ||
         !semverUtils.satisfiesWithPrereleases(
-          locator.version,
+          foundLocator.version,
           advisory.vulnerable_versions,
         )
       ) {
@@ -121,23 +118,30 @@ class NpmAuditFixCommand extends BaseCommand {
         MessageName.UNNAMED,
         `Found vulnerable ${structUtils.prettyLocator(
           configuration,
-          locator,
-        )} (via ${structUtils.prettyRange(configuration, descriptor.range)})`,
+          foundLocator,
+        )} (via ${structUtils.prettyRange(
+          configuration,
+          foundDescriptor.range,
+        )})`,
       )
 
-      const candidates = await resolver.getCandidates(descriptor, new Map(), {
-        project,
-        report,
-        resolver,
-      })
+      const candidates = await resolver.getCandidates(
+        foundDescriptor,
+        new Map(),
+        {
+          project,
+          report,
+          resolver,
+        },
+      )
       const preferred = candidates[0]
 
       if (!preferred) {
         report.reportError(
           MessageName.UNNAMED,
-          `No candidates found for ${structUtils.prettyDescriptor(
+          `No patched candidates found for ${structUtils.prettyDescriptor(
             configuration,
-            descriptor,
+            foundDescriptor,
           )}`,
         )
         continue
@@ -158,7 +162,7 @@ class NpmAuditFixCommand extends BaseCommand {
           MessageName.UNNAMED,
           `No compatible patched version found for ${structUtils.prettyDescriptor(
             configuration,
-            descriptor,
+            foundDescriptor,
           )}`,
         )
         continue
@@ -166,24 +170,31 @@ class NpmAuditFixCommand extends BaseCommand {
 
       report.reportInfo(
         MessageName.UNNAMED,
-        `Attempting to upgrade ${structUtils.prettyDescriptor(
+        `Setting resolution for ${structUtils.prettyDescriptor(
           configuration,
-          descriptor,
-        )} to ${structUtils.prettyLocator(configuration, pkg)}`,
+          foundDescriptor,
+        )} to ${structUtils.prettyRange(configuration, pkg.version)}`,
       )
 
-      // deleting the resolution and locator will cause the project to
-      // re-resolve the descriptor on the next install
-      resolutionsToDelete.add(descriptor.descriptorHash)
-      locatorsToDelete.add(locator.locatorHash)
+      this.setResolution(state, foundDescriptor, pkg)
     }
+  }
 
-    resolutionsToDelete.forEach(
-      (descriptorHash) => void project.storedResolutions.delete(descriptorHash),
-    )
+  private setResolution(
+    state: Awaited<ReturnType<typeof this.initState>>,
+    fromDescriptor: Descriptor,
+    toLocator: Locator,
+  ) {
+    const { project } = state
 
-    locatorsToDelete.forEach(
-      (locatorHash) => void project.storedPackages.delete(locatorHash),
+    const toDescriptor = structUtils.convertLocatorToDescriptor(toLocator)
+
+    project.storedDescriptors.set(fromDescriptor.descriptorHash, fromDescriptor)
+    project.storedDescriptors.set(toDescriptor.descriptorHash, toDescriptor)
+
+    project.resolutionAliases.set(
+      fromDescriptor.descriptorHash,
+      toDescriptor.descriptorHash,
     )
   }
 
