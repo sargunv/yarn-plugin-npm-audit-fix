@@ -99,6 +99,10 @@ class NpmAuditFixCommand extends BaseCommand {
         continue
       }
 
+      if (structUtils.isVirtualDescriptor(descriptor)) {
+        continue
+      }
+
       const locator = project.storedPackages.get(
         project.storedResolutions.get(descriptor.descriptorHash),
       )

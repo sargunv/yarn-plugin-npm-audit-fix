@@ -109,6 +109,9 @@ var plugin = (() => {
         if (!import_core.structUtils.areIdentsEqual(descriptor, ident)) {
           continue;
         }
+        if (import_core.structUtils.isVirtualDescriptor(descriptor)) {
+          continue;
+        }
         const locator = project.storedPackages.get(
           project.storedResolutions.get(descriptor.descriptorHash)
         );
