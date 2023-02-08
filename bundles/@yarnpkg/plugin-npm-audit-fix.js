@@ -101,8 +101,10 @@ var plugin = (() => {
       return report.exitCode();
     }
     async handleAdvisory(report, state, advisory) {
-      const { configuration, resolver, project, cache } = state;
+      const { configuration, resolver, project } = state;
       const ident = import_core.structUtils.parseIdent(advisory.module_name);
+      const resolutionsToDelete = /* @__PURE__ */ new Set();
+      const locatorsToDelete = /* @__PURE__ */ new Set();
       for (const descriptor of project.storedDescriptors.values()) {
         if (!import_core.structUtils.areIdentsEqual(descriptor, ident)) {
           continue;
@@ -164,9 +166,15 @@ var plugin = (() => {
             descriptor
           )} to ${import_core.structUtils.prettyLocator(configuration, pkg)}`
         );
-        project.storedResolutions.delete(descriptor.descriptorHash);
-        project.storedPackages.delete(locator.locatorHash);
+        resolutionsToDelete.add(descriptor.descriptorHash);
+        locatorsToDelete.add(locator.locatorHash);
       }
+      resolutionsToDelete.forEach(
+        (descriptorHash) => void project.storedResolutions.delete(descriptorHash)
+      );
+      locatorsToDelete.forEach(
+        (locatorHash) => void project.storedPackages.delete(locatorHash)
+      );
     }
     async initState() {
       const configuration = await import_core.Configuration.find(

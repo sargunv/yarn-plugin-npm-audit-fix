@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PassThrough } from "stream"
 
 import { BaseCommand, WorkspaceRequiredError } from "@yarnpkg/cli"
 import {
   Cache,
   Configuration,
-  Descriptor,
+  DescriptorHash,
   InstallMode,
+  LocatorHash,
   MessageName,
   Plugin,
   Project,
@@ -87,9 +87,12 @@ class NpmAuditFixCommand extends BaseCommand {
     state: Awaited<ReturnType<typeof this.initState>>,
     advisory: Advisory,
   ) {
-    const { configuration, resolver, project, cache } = state
+    const { configuration, resolver, project } = state
 
     const ident = structUtils.parseIdent(advisory.module_name)
+
+    const resolutionsToDelete = new Set<DescriptorHash>()
+    const locatorsToDelete = new Set<LocatorHash>()
 
     for (const descriptor of project.storedDescriptors.values()) {
       if (!structUtils.areIdentsEqual(descriptor, ident)) {
@@ -164,9 +167,19 @@ class NpmAuditFixCommand extends BaseCommand {
         )} to ${structUtils.prettyLocator(configuration, pkg)}`,
       )
 
-      project.storedResolutions.delete(descriptor.descriptorHash)
-      project.storedPackages.delete(locator.locatorHash)
+      // deleting the resolution and locator will cause the project to
+      // re-resolve the descriptor on the next install
+      resolutionsToDelete.add(descriptor.descriptorHash)
+      locatorsToDelete.add(locator.locatorHash)
     }
+
+    resolutionsToDelete.forEach(
+      (descriptorHash) => void project.storedResolutions.delete(descriptorHash),
+    )
+
+    locatorsToDelete.forEach(
+      (locatorHash) => void project.storedPackages.delete(locatorHash),
+    )
   }
 
   private async initState() {
