@@ -14,29 +14,60 @@ import {
   StreamReport,
   structUtils,
 } from "@yarnpkg/core"
+import { Command, Option } from "clipanion"
 import * as t from "typanion"
-
-const isAuditResult = t.isObject(
-  {
-    advisories: t.isDict(
-      t.isObject(
-        {
-          module_name: t.isString(),
-          vulnerable_versions: t.isString(),
-          patched_versions: t.isString(),
-        },
-        { extra: t.isDict(t.isUnknown()) },
-      ),
-    ),
-  },
-  { extra: t.isDict(t.isUnknown()) },
-)
-
-type AuditResult = t.InferType<typeof isAuditResult>
-type Advisory = AuditResult[`advisories`][string]
 
 class NpmAuditFixCommand extends BaseCommand {
   public static paths = [[`npm`, `audit`, `fix`]]
+
+  public static usage = Command.Usage({
+    description: `Attempt to fix advisories reported by the audit`,
+    details: `
+    This command attempts to resolve security advisories on the packages you use
+    by upgrading packages to patched versions if possible while respecting the 
+    requested version ranges.
+
+    Most flags do the same as their counterparts in \`yarn npm audit\`.
+
+    The \`--mode\` flag does the same as its counterpart in \`yarn install\`.
+    `,
+    examples: [[`Attempt to resolve all audit advisories`, `$0 npm audit -AR`]],
+  })
+
+  // yarn npm audit flags
+
+  public all = Option.Boolean(`-A,--all`, false, {
+    description: `Audit dependencies from all workspaces`,
+  })
+
+  public recursive = Option.Boolean(`-R,--recursive`, false, {
+    description: `Audit transitive dependencies as well`,
+  })
+
+  public environment = Option.String(`--environment`, Environment.All, {
+    description: `Which environments to cover`,
+    validator: t.isEnum(Environment),
+  })
+
+  public severity = Option.String(`--severity`, Severity.Info, {
+    description: `Minimal severity requested for packages to be displayed`,
+    validator: t.isEnum(Severity),
+  })
+
+  public excludes = Option.Array(`--exclude`, [], {
+    description: `Array of glob patterns of packages to exclude from audit`,
+  })
+
+  public ignores = Option.Array(`--ignore`, [], {
+    description: `Array of glob patterns of advisory ID's to ignore in the audit report`,
+  })
+
+  // yarn install flags
+
+  public mode = Option.String(`--mode`, {
+    description: `Change what artifacts installs generate`,
+    validator: t.isEnum(InstallMode),
+  })
 
   public async execute() {
     const state = await this.initState()
@@ -74,7 +105,7 @@ class NpmAuditFixCommand extends BaseCommand {
         await project.install({
           report,
           cache,
-          mode: InstallMode.UpdateLockfile,
+          mode: this.mode,
         })
       },
     )
@@ -125,7 +156,7 @@ class NpmAuditFixCommand extends BaseCommand {
         )})`,
       )
 
-      const candidates = await resolver.getCandidates(
+      const canidateLocators = await resolver.getCandidates(
         foundDescriptor,
         new Map(),
         {
@@ -134,12 +165,12 @@ class NpmAuditFixCommand extends BaseCommand {
           resolver,
         },
       )
-      const preferred = candidates[0]
+      const preferredLocator = canidateLocators[0]
 
-      if (!preferred) {
+      if (!preferredLocator) {
         report.reportError(
           MessageName.UNNAMED,
-          `No patched candidates found for ${structUtils.prettyDescriptor(
+          `No candidates found for ${structUtils.prettyDescriptor(
             configuration,
             foundDescriptor,
           )}`,
@@ -147,14 +178,14 @@ class NpmAuditFixCommand extends BaseCommand {
         continue
       }
 
-      const pkg = await resolver.resolve(preferred, {
+      const preferredPackage = await resolver.resolve(preferredLocator, {
         project,
         report,
         resolver,
       })
       if (
         !semverUtils.satisfiesWithPrereleases(
-          pkg.version,
+          preferredPackage.version,
           advisory.patched_versions,
         )
       ) {
@@ -173,10 +204,10 @@ class NpmAuditFixCommand extends BaseCommand {
         `Setting resolution for ${structUtils.prettyDescriptor(
           configuration,
           foundDescriptor,
-        )} to ${structUtils.prettyRange(configuration, pkg.version)}`,
+        )} to ${structUtils.prettyLocator(configuration, preferredLocator)}`,
       )
 
-      this.setResolution(state, foundDescriptor, pkg)
+      this.setResolution(state, foundDescriptor, preferredPackage)
     }
   }
 
@@ -228,7 +259,15 @@ class NpmAuditFixCommand extends BaseCommand {
       chunks.push(chunk)
     })
 
-    await this.cli.run([`npm`, `audit`, `-AR`, `--json`], { stdout })
+    const args = [`npm`, `audit`, `-AR`, `--json`]
+    if (this.all) args.push(`--all`)
+    if (this.recursive) args.push(`--recursive`)
+    if (this.environment) args.push(`--environment`, this.environment)
+    if (this.severity) args.push(`--severity`, this.severity)
+    for (const exclude of this.excludes) args.push(`--exclude`, exclude)
+    for (const ignore of this.ignores) args.push(`--ignore`, ignore)
+
+    await this.cli.run(args, { stdout })
     stdout.end()
 
     const result = JSON.parse(Buffer.concat(chunks).toString()) as unknown
@@ -245,6 +284,45 @@ class NpmAuditFixCommand extends BaseCommand {
     return advisories
   }
 }
+
+// type helpers; I can't find docs so these may need modification for optionals
+
+const isAuditResult = t.isObject(
+  {
+    advisories: t.isDict(
+      t.isObject(
+        {
+          module_name: t.isString(),
+          vulnerable_versions: t.isString(),
+          patched_versions: t.isString(),
+        },
+        { extra: t.isDict(t.isUnknown()) },
+      ),
+    ),
+  },
+  { extra: t.isDict(t.isUnknown()) },
+)
+
+type AuditResult = t.InferType<typeof isAuditResult>
+type Advisory = AuditResult[`advisories`][string]
+
+// enums copied from https://github.com/yarnpkg/berry/blob/%40yarnpkg/plugin-npm-cli/3.3.0/packages/plugin-npm-cli/sources/npmAuditTypes.ts
+
+export enum Environment {
+  All = `all`,
+  Production = `production`,
+  Development = `development`,
+}
+
+export enum Severity {
+  Info = `info`,
+  Low = `low`,
+  Moderate = `moderate`,
+  High = `high`,
+  Critical = `critical`,
+}
+
+// finally, export the plugin
 
 const plugin: Plugin = {
   commands: [NpmAuditFixCommand],
