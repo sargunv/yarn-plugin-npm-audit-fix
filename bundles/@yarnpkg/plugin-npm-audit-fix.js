@@ -115,7 +115,7 @@ var plugin = (() => {
         const locator = project.storedPackages.get(
           project.storedResolutions.get(descriptor.descriptorHash)
         );
-        if (!import_core.semverUtils.satisfiesWithPrereleases(
+        if (!locator || !import_core.semverUtils.satisfiesWithPrereleases(
           locator.version,
           advisory.vulnerable_versions
         )) {

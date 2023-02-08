@@ -108,6 +108,7 @@ class NpmAuditFixCommand extends BaseCommand {
       )
 
       if (
+        !locator ||
         !semverUtils.satisfiesWithPrereleases(
           locator.version,
           advisory.vulnerable_versions,
