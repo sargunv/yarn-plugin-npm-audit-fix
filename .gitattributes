@@ -6,3 +6,6 @@
 
 # ignore-sync
 .gitignore      linguist-generated
+
+# plugin
+/bundles/**/*   linguist-gemerated

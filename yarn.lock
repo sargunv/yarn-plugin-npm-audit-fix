@@ -423,7 +423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/cli@npm:^3.4.0, @yarnpkg/cli@npm:^3.4.1":
+"@yarnpkg/cli@npm:3.4.1, @yarnpkg/cli@npm:^3.4.0":
   version: 3.4.1
   resolution: "@yarnpkg/cli@npm:3.4.1"
   dependencies:
@@ -461,7 +461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/core@npm:^3.3.0, @yarnpkg/core@npm:^3.4.0":
+"@yarnpkg/core@npm:3.4.0, @yarnpkg/core@npm:^3.3.0, @yarnpkg/core@npm:^3.4.0":
   version: 3.4.0
   resolution: "@yarnpkg/core@npm:3.4.0"
   dependencies:
@@ -1208,17 +1208,6 @@ __metadata:
   peerDependencies:
     typanion: "*"
   checksum: c9d8ba9e16dca3016c32f42107a7602c52c9176626e0c815113c32b614ca125a9707221ec9df9c0a06e9741a23e0664153db1522c4f80b29f4b4d427fba002be
-  languageName: node
-  linkType: hard
-
-"clipanion@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "clipanion@npm:3.1.0"
-  dependencies:
-    typanion: ^3.3.1
-  peerDependencies:
-    typanion: "*"
-  checksum: bf350082e8953c697cfe35262845700012bdeb1cc490f81cd17de2fe985c8861750164509795ad95d3ee6a2b3742a1d5c6394cdf0f3ff4c4d24173a9fec3418e
   languageName: node
   linkType: hard
 
@@ -3515,6 +3504,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:7.1.2":
+  version: 7.1.2
+  resolution: "semver@npm:7.1.2"
+  bin:
+    semver: bin/semver.js
+  checksum: e29309f559f53a0ad933b43b4d74ae056092f09f8d1684b2576be23a11d97e70e99632642cae145b27ef5e350e867ef085ecd4d8f362d844bba527df96b1d784
+  languageName: node
+  linkType: hard
+
 "semver@npm:^6.3.0":
   version: 6.3.0
   resolution: "semver@npm:6.3.0"
@@ -4009,12 +4007,13 @@ __metadata:
     "@sargunv/prettier-config": ^0.2.2
     "@types/node": ^18.13.0
     "@yarnpkg/builder": ^3.2.7
-    "@yarnpkg/cli": ^3.4.1
-    "@yarnpkg/core": ^3.4.0
-    clipanion: ^3.1.0
+    "@yarnpkg/cli": 3.4.1
+    "@yarnpkg/core": 3.4.0
+    clipanion: 3.2.0-rc.4
     eslint: ^8.33.0
     ignore-sync: ^6.0.2
     prettier: ^2.8.4
+    semver: 7.1.2
     typanion: ^3.12.1
     typescript: 4.9.5
   languageName: unknown
