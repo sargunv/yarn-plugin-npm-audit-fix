@@ -3,11 +3,8 @@
     "experimentalDecorators": true,
     "module": "commonjs",
     "target": "ES2019",
-    "lib": [
-      "ES2019"
-    ]
+    "lib": ["ES2019"],
+    "skipLibCheck": true
   },
-  "include": [
-    "sources/**/*.ts"
-  ]
+  "include": ["sources/**/*.ts"]
 }

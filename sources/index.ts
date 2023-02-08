@@ -1,30 +1,27 @@
-import {Plugin} from '@yarnpkg/core';
-import {BaseCommand} from '@yarnpkg/cli';
-import {Option} from 'clipanion';
+import { BaseCommand } from "@yarnpkg/cli"
+import { Plugin } from "@yarnpkg/core"
+import { Option } from "clipanion"
 
 class HelloWorldCommand extends BaseCommand {
-  static paths = [
-    [`hello`, `world`],
-  ];
+  public static paths = [[`hello`, `world`]]
 
-  name = Option.String(`--name`, `John Doe`, {
+  public name = Option.String(`--name`, `John Doe`, {
     description: `Your name`,
-  });
+  })
 
-  async execute() {
-    console.log(`Hello ${this.name}!`);
+  public execute() {
+    console.log(`Hello ${this.name}!`)
+    return Promise.resolve()
   }
 }
 
 const plugin: Plugin = {
   hooks: {
     afterAllInstalled: () => {
-      console.log(`What a great install, am I right?`);
+      console.log(`What a great install, am I right?`)
     },
   },
-  commands: [
-    HelloWorldCommand,
-  ],
-};
+  commands: [HelloWorldCommand],
+}
 
-export default plugin;
+export default plugin

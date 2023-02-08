@@ -1,16 +1,41 @@
 {
-  "name": "yarn-plugin-helloworld",
+  "name": "yarn-plugin-npm-audit-fix",
+  "version": "0.0.0",
+  "homepage": "https://github.com/sargunv/yarn-plugin-npm-audit-fix",
+  "repository": "sargunv/yarn-plugin-npm-audit-fix",
+  "license": "Apache-2.0",
+  "type": "commonjs",
   "main": "./sources/index.ts",
-  "dependencies": {
-    "@types/node": "^18.0.0",
-    "@yarnpkg/builder": "^4.0.0-rc.38",
-    "@yarnpkg/cli": "^4.0.0-rc.38",
-    "@yarnpkg/core": "^4.0.0-rc.38",
-    "clipanion": "^3.2.0-rc.10",
-    "typescript": "5.0.0-beta"
-  },
   "scripts": {
-    "build": "builder build plugin"
+    "build": "builder build plugin",
+    "configure": "yarn dlx @yarnpkg/sdks vscode && ignore-sync .",
+    "fix": "eslint . --fix && prettier --write .",
+    "lint": "eslint . && prettier --check . --loglevel warn",
+    "test": "true"
+  },
+  "prettier": "@sargunv/prettier-config",
+  "eslintConfig": {
+    "extends": [
+      "@sargunv/eslint-config",
+      "@sargunv/eslint-config/mixins/typescript"
+    ],
+    "ignorePatterns": [
+      ".yarn"
+    ],
+    "root": true
+  },
+  "devDependencies": {
+    "@sargunv/eslint-config": "^0.2.2",
+    "@sargunv/prettier-config": "^0.2.2",
+    "@types/node": "^18.13.0",
+    "@yarnpkg/builder": "^3.2.7",
+    "@yarnpkg/cli": "^3.4.1",
+    "@yarnpkg/core": "^3.4.0",
+    "clipanion": "^3.1.0",
+    "eslint": "^8.33.0",
+    "ignore-sync": "^6.0.2",
+    "prettier": "^2.8.4",
+    "typescript": "4.9.5"
   },
   "packageManager": "yarn@3.4.1"
 }
