@@ -1,27 +1,25 @@
 import { BaseCommand } from "@yarnpkg/cli"
-import { Plugin } from "@yarnpkg/core"
+import { type Plugin } from "@yarnpkg/core"
 import { Option } from "clipanion"
+import * as t from "typanion"
 
-class HelloWorldCommand extends BaseCommand {
-  public static paths = [[`hello`, `world`]]
+const STRATEGIES = [`TODO`] as const
 
-  public name = Option.String(`--name`, `John Doe`, {
-    description: `Your name`,
+class NpmAuditFixCommand extends BaseCommand {
+  public static paths = [[`npm`, `audit`, `fix`]]
+
+  public strategy = Option.String(`--strategy`, `TODO`, {
+    description: `Set which strategy to attempt to fix advisories`,
+    validator: t.isEnum(STRATEGIES),
   })
 
   public execute() {
-    console.log(`Hello ${this.name}!`)
-    return Promise.resolve()
+    return Promise.resolve(1)
   }
 }
 
 const plugin: Plugin = {
-  hooks: {
-    afterAllInstalled: () => {
-      console.log(`What a great install, am I right?`)
-    },
-  },
-  commands: [HelloWorldCommand],
+  commands: [NpmAuditFixCommand],
 }
 
 export default plugin
