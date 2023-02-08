@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "./sources/index.ts",
   "scripts": {
-    "build": "builder build plugin --no-minify",
+    "build": "builder build plugin",
     "configure": "yarn dlx @yarnpkg/sdks vscode && ignore-sync .",
     "fix": "eslint . --fix && prettier --write .",
     "lint": "eslint . && prettier --check . --loglevel warn",
