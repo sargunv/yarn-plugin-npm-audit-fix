@@ -20,7 +20,8 @@
       "@sargunv/eslint-config/mixins/typescript"
     ],
     "ignorePatterns": [
-      ".yarn"
+      ".yarn",
+      "bundles/"
     ],
     "root": true
   },
@@ -32,7 +33,7 @@
     "typanion": "^3.12.1"
   },
   "devDependencies": {
-    "@sargunv/eslint-config": "^0.2.2",
+    "@sargunv/eslint-config": "^0.3.0",
     "@sargunv/prettier-config": "^0.2.2",
     "@types/node": "^18.13.0",
     "@yarnpkg/builder": "^3.2.7",

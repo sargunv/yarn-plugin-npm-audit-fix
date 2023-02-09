@@ -1,4 +1,4 @@
-import { PassThrough } from "stream"
+import { PassThrough } from "node:stream"
 
 import { BaseCommand, WorkspaceRequiredError } from "@yarnpkg/cli"
 import {
@@ -277,9 +277,9 @@ class NpmAuditFixCommand extends BaseCommand {
 
     const advisories: Advisory[] = []
 
-    Object.entries(result.advisories).forEach(([_id, advisory]) => {
+    for (const [_id, advisory] of Object.entries(result.advisories)) {
       advisories.push(advisory)
-    })
+    }
 
     return advisories
   }
