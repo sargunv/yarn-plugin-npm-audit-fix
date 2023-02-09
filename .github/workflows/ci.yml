@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [yarn-v3]
   pull_request:
-    branches: [main]
+    branches: [yarn-v3]
 
 jobs:
   build:
