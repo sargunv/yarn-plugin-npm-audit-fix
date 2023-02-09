@@ -7,6 +7,8 @@ some projects. PRs and detailed bug reports welcome!
 
 ## Installation
 
+For Yarn v3:
+
 ```sh
 yarn plugin import 'https://raw.githubusercontent.com/sargunv/yarn-plugin-npm-audit-fix/yarn-v3/bundles/%40yarnpkg/plugin-npm-audit-fix.js'
 ```
