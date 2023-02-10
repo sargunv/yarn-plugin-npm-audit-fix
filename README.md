@@ -18,7 +18,7 @@ yarn plugin import 'https://raw.githubusercontent.com/sargunv/yarn-plugin-npm-au
 To attempt to fix all advisories:
 
 ```sh
-yarn npm audit fix --all --recursive
+yarn npm audit fix --all --recursive --mode=update-lockfile
 ```
 
 The command takes all the same flags as
