@@ -1,4 +1,4 @@
-# Yarn plugin: `yarn npm audit fix`
+# `yarn npm audit fix`
 
 Yarn plugin to fix npm audit issues.
 
