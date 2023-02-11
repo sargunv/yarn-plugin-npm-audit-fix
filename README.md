@@ -2,9 +2,6 @@
 
 Yarn plugin to fix npm audit issues.
 
-It's currently experimental, can only handle simple cases, and may error out on
-some projects. PRs and detailed bug reports welcome!
-
 ## Installation
 
 For Yarn v3:
